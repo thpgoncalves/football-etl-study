@@ -42,8 +42,7 @@ def create_classification_table(df: pd.DataFrame, year: int | list[int] | None =
             result_df = result_df[result_df['Year'].isin(year)]
     
     if result_df.empty:
-        print(f"No data found for year(s): {year}")
-        return pd.DataFrame() 
+        return pd.DataFrame(columns=['Team', 'Total Points', 'Wins', 'Draws', 'Loses', 'Goals Diff', 'Goals For', 'Goals Against'])
 
     filtered_agg = calculate_goals_statistics(calculate_points(result_df))
     
@@ -115,11 +114,12 @@ def calculate_goals_statistics(df: pd.DataFrame) -> pd.DataFrame:
         'home_lose': 'sum',
         'Draws': 'sum',
         })
-    result_df_agg_home.rename(columns={
+    
+    result_df_agg_home = result_df_agg_home.rename(columns={
         'HomeTeam': 'Team',
         'FTHG': 'Goals For',
         'FTAG': 'Goals Against'
-        }, inplace=True)
+        })
 
     result_df_agg_away = result_df.groupby('AwayTeam', as_index=False).agg({
     'FTHG': 'sum',
@@ -129,11 +129,11 @@ def calculate_goals_statistics(df: pd.DataFrame) -> pd.DataFrame:
     'away_lose': 'sum',
     'Draws': 'sum',
     })
-    result_df_agg_away.rename(columns={
+    result_df_agg_away = result_df_agg_away.rename(columns={
         'AwayTeam': 'Team',
         'FTHG': 'Goals Against',
         'FTAG': 'Goals For'
-        }, inplace=True)
+        })
 
     combined_df = pd.concat([result_df_agg_away, result_df_agg_home], ignore_index=True)
 
