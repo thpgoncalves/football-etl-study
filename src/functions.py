@@ -1,33 +1,59 @@
 import pandas as pd
-from typing import List
 
 def read_csv(df: str) -> pd.DataFrame:
     """
+    Reads the CSV and transforms it in a Data Frame
     """
     data_frame = pd.read_csv(f'../data/{df}.csv')
     return data_frame
 
 def add_year(df: pd.DataFrame, date_collumn: str) -> pd.DataFrame:
+    """
+    Create a collumn that says the year that the match was in.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing match data.
+        date_collumn(str): The collumn that the date is in for the function extract the year
+    """
     result_df = df.copy()
     result_df[f'{date_collumn}'] = pd.to_datetime(result_df[f'{date_collumn}'], dayfirst=True, format='mixed')
     result_df['Year'] = result_df[f'{date_collumn}'].dt.year
     return result_df 
 
-def create_classification_table(df: pd.DataFrame, year: int) -> pd.DataFrame:
+def create_classification_table(df: pd.DataFrame, year: int | list[int] | None = None) -> pd.DataFrame:
     """
+    Creates a classification table for a specific year, multiple years, or all years.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing match data.
+        year (int | list[int] | None): Year(s) to filter. If None, processes the entire DataFrame.
+
+    Returns:
+        pd.DataFrame: A classification table sorted by total points.
     """
     result_df = df.copy()
 
-    collumns_order = ['Team', 'Total Points', 'Wins', 'Draws', 'Loses', 'Goals Diff', 'Goals For', 'Goals Against']
-
     result_df = add_year(result_df, 'Date')
-    filtered_df = result_df[result_df['Year'] == year]
 
-    filtered_agg = calculate_goals_statistics(calculate_points(filtered_df))
+    if year is not None:
+        if isinstance(year, int):
+            result_df = result_df[result_df['Year'] == year]
+        elif isinstance(year, list):
+            result_df = result_df[result_df['Year'].isin(year)]
+    
+    if result_df.empty:
+        print(f"No data found for year(s): {year}")
+        return pd.DataFrame() 
+
+    filtered_agg = calculate_goals_statistics(calculate_points(result_df))
+    
     filtered_agg['Total Points'] = filtered_agg['home_team_points'] + filtered_agg['away_team_points']
     filtered_agg['Wins'] = filtered_agg['home_win'] + filtered_agg['away_win']
     filtered_agg['Loses'] = filtered_agg['home_lose'] + filtered_agg['away_lose']
+    
+    collumns_order = ['Team', 'Total Points', 'Wins', 'Draws', 'Loses', 'Goals Diff', 'Goals For', 'Goals Against']
     filtered_agg = filtered_agg[collumns_order]
+    
     return filtered_agg.sort_values(by='Total Points', ascending=False)
 
 def calculate_points(df: pd.DataFrame) -> pd.DataFrame:
