@@ -4,7 +4,7 @@ def read_csv(df: str) -> pd.DataFrame:
     """
     Reads the CSV and transforms it in a Data Frame
     """
-    data_frame = pd.read_csv(f'../data/{df}.csv')
+    data_frame = pd.read_csv(f'data/{df}.csv')
     return data_frame
 
 def add_year(df: pd.DataFrame, date_collumn: str) -> pd.DataFrame:
