@@ -32,7 +32,6 @@ def create_classification_table(df: pd.DataFrame, year: int | list[int] | None =
         pd.DataFrame: A classification table sorted by total points.
     """
     result_df = df.copy()
-
     result_df = add_year(result_df, 'Date')
 
     if year is not None:
